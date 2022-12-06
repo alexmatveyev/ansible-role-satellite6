@@ -1,0 +1,41 @@
+---
+# tasks file for
+- name: Unregister system and remove all subscriptions
+  redhat_subscription:
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+    state: absent
+
+- name: Register system and attach Red Hat Satellite Infrastructure Subscription
+  redhat_subscription:
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+    state: present
+    force_register: yes
+    pool: '^(Red Hat Satellite Infrastructure Subscription)$'
+  register: subscription_output
+
+- name: Check Red Hat Satellite Infrastructure Subscription
+  fail:
+    msg: Can't attach Red Hat Satellite Infrastructure Subscription
+  when: (subscription_output.subscribed_pool_ids is not defined) or (subscription_output.subscribed_pool_ids|length == 0)
+
+- name: Red Hat Satellite Infrastructure Subscription attached
+  debug:
+    msg: "Success. Subscription Pool ID: {{ subscription_output.subscribed_pool_ids }}"
+
+- name: Disable all RHSM repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable required repositories for Red Hat Satellite
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-satellite-6.10-rpms
+    - rhel-7-server-satellite-maintenance-6-rpms
+    - rhel-server-rhscl-7-rpms
+    - rhel-7-server-ansible-2.9-rpms

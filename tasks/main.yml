@@ -1,0 +1,19 @@
+---
+# tasks file for ansible-role-satellite6
+- name: Checking system os release version
+  assert:
+    that: "ansible_distribution == 'RedHat' and ansible_distribution_major_version|int == 7"
+    fail_msg: "Red Hat Satellite 6 can be installed on RHEL 7 release"
+    success_msg: "Syetem os version supported"
+
+- name: Register system and attach subscription
+  include: rhsm.yml
+
+- name: Prepearing for Red Hat Satellite installation
+  include: prerequisites.yml
+
+- name: Configure firewall for Red Hat Satellite installation
+  include: firewall-rules.yml
+
+- name: Red Hat Satellite installation and configuration
+  include: satellite.yml

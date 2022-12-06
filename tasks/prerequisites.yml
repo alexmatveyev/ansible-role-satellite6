@@ -1,0 +1,43 @@
+---
+# tasks file for
+- name: Update all packages
+  yum:
+    name: '*'
+    state: latest
+  register: yum_result
+
+- name: Reboot server
+  reboot:
+    reboot_timeout: 200
+  when: yum_result.rc == 0 
+
+#- debug:
+#    msg: "Debug:  {{ yum_result.rc }}"
+
+- name: Install required packages
+  yum:
+    name:
+      - sos
+      - chrony
+    state: present
+
+- name: Enable service chronyd and ensure it is not masked
+  systemd:
+    name: chronyd
+    state: started
+    enabled: yes
+    masked: no
+
+- name: Install Red Hat Insights
+  yum:
+    name: insights-client
+    state: present
+  when:  install_redhat_insights | default('no') | lower == "yes"
+
+- name: Enable Red Hat Insights
+  systemd:
+    name: insights-client
+    state: started
+    enabled: yes
+    masked: no
+  when:  install_redhat_insights | default('no') | lower == "yes"

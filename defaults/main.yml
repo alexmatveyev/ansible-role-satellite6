@@ -1,0 +1,7 @@
+---
+# defaults file for ansible-role-satellite6
+sat_username: admin
+sat_password: RedHat1!
+sat_organization: RedHat
+sat_location: Raleigh
+install_redhat_insights: no
